@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>ROY - 367 Three.js demo</title>
+  <style>
+    * {
+      margin: 0px;
+      padding: 0px;
+    }  </style>
+  <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@latest/build/three.module.js"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    const scene = new THREE.Scene();
+
+    // change background color
+    scene.background = new THREE.Color(0x454545);
+
+    let boxes = [];
+
+    const fov = 100;
+    const near = 0.1;
+    const far = 10;
+    const camera = new THREE.PerspectiveCamera( fov, window.innerWidth / window.innerHeight, near, far );
+
+    const renderer = new THREE.WebGLRenderer();
+
+    // Load Textures
+    let floorWidth = 20;
+    let floorHeight = 40;
+    let boxWidth = 1;
+    let boxHeight = 2;
+    let boxDepth = 1;
+    let textureLoader = new THREE.TextureLoader();
+
+    let grass = textureLoader.load('WIP-Wood-Floor_albedo.png');
+    grass.wrapS = THREE.RepeatWrapping;
+    grass.wrapT = THREE.RepeatWrapping;
+    grass.repeat.set(floorWidth / 2, floorHeight / 2);
+
+    let stone = textureLoader.load('rpifogismrmlmlnlmflr1_rfl.png');
+    stone.wrapS = THREE.RepeatWrapping;
+    stone.wrapT = THREE.RepeatWrapping;
+    stone.repeat.set(boxWidth / 2, boxHeight / 2);
+
+
+    // Add a floor to the scene
+    //let floorWidth = 20;
+    //let floorHeight = 40;
+    let floorGeometry = new THREE.PlaneGeometry(floorWidth, floorHeight);
+    //let floorMaterial = new THREE.MeshStandardMaterial( { color: 0x009900 } );
+    let floorMaterial = new THREE.MeshStandardMaterial({ 
+        map: grass,
+        metalness: 0.25,
+        roughness: 0.75
+    });
+    
+
+    let floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
+
+    // A Plane is created standing vertically.
+    // Let's rotate it so that is lays flat.
+    floorMesh.position.set( 0, -1, -3 );
+    floorMesh.rotation.set( -Math.PI/2, 0, 0 );
+    scene.add(floorMesh);
+
+    // Add a box to the scene
+    //let boxWidth = 0.9;
+    //let boxHeight = 2;
+    //let boxDepth = 0.2;
+    let boxGeometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+    //let boxMaterial = new THREE.MeshStandardMaterial( { color: 0x00ffff });
+    let boxMaterial = new THREE.MeshStandardMaterial({
+        map: stone,
+        metalness: 0,
+        roughness: 1
+    });
+
+    for (let i = 0; i < 14; i++) {
+    let boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
+        boxMesh.position.set(i - 7, 1, -5);
+        boxMesh.receiveShadow = true;
+        boxMesh.castShadow = true;
+        scene.add(boxMesh);
+        boxes.push(boxMesh);
+    }
+    const geometry = new THREE.TorusGeometry( 2, 1, 10, 100 ); 
+    const material = new THREE.MeshBasicMaterial( { color: 0x101010 } ); 
+    const torus = new THREE.Mesh( geometry, material ); scene.add( torus );
+    // move torus back
+    torus.position.set(0, 6, -7);
+    boxes.push(torus);
+
+
+    //let boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
+    //boxMesh.position.set(-2, 1, -5);
+    //scene.add(boxMesh);
+    //boxes.push(boxMesh);
+    
+    // Add the Lights
+    // Ambient light is used to prevent the scene
+    // from ever being too dark.
+    var ambient = new THREE.AmbientLight(0x333333);
+    scene.add(ambient);
+
+    // A point light acts like a light bulb, sending light
+    // in all directions.
+    var lightIntensity = 10;
+    var pointLight = new THREE.PointLight(0xffffff, lightIntensity);
+    pointLight.position.set(2, 4, -2);
+    scene.add(pointLight);
+
+    // Enable Shadows
+    // The floor will only receive shadows, but the box can both
+    // cast and receive shadows.
+    renderer.shadowMap.enabled = true;
+    floorMesh.receiveShadow = true;
+    //boxMesh.receiveShadow = true;
+    //boxMesh.castShadow = true;
+    pointLight.castShadow = true;
+
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+    renderer.setClearColor(0xFFFFFF);
+    function animate() {
+        for(let i = 0; i < boxes.length; i++) {
+            boxes[i].rotateX(Math.PI/(100+i));
+        }
+        requestAnimationFrame( animate );
+        renderer.render( scene, camera );
+    }
+    animate();
+  </script>
+</head>
+<body>
+</body>
+</html>
